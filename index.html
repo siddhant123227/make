@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Fixed Navbar</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .properties-panel {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            z-index: 1001;
+        }
+
+        .code-panel {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: left 0.3s ease;
+        }
+
+        .code-panel-toggle {
+            position: fixed;
+            left: 10px;
+            top: 60px;
+            background: black;
+            color: white;
+            border-radius: white;
+            padding: 10px;
+            border-radius: 20%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            z-index: 1002;
+        }
+
+        .code-panel-toggle:hover {
+            background: white;
+            color: black;
+           
+        }
+
+        .code-panel.active {
+            left: 0;
+        }
+
+        .properties-panel.active {
+            right: 0;
+        }
+
+        .panel-section {
+            margin-bottom: 20px;
+        }
+
+        .panel-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .panel-section input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .panel-section button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .panel-section button:hover {
+            background: #555;
+        }
+
+        .draggable-element {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .draggable-element:hover {
+            background: #e0e0e0;
+        }
+
+        .draggable-element .material-symbols-outlined {
+            font-size: 18px;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            height: 80px; /* Fixed height for desktop */
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .banner-container {
+            width: 100%;
+            margin-top: 0;
+            background: white;
+        }
+        
+        .banner-container img {
+            width: 100%;
+            display: block;
+        }
+
+        .menu-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 26px;
+            cursor: pointer;
+        }
+
+        .logo img {
+            height: 40px;
+            max-height: 100%;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links li a {
+            text-decoration: none;
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .icons {
+            display: flex;
+            gap: 15px;
+            font-size: 22px;
+            cursor: pointer;
+            font-family: 'Material Symbols Outlined';
+        }
+
+        /* Mobile Styles */
+        @media screen and (max-width: 768px) {
+            .navbar {
+                height: 60px; /* Fixed height for mobile */
+                padding: 10px 15px;
+            }
+
+            .menu-toggle {
+                display: block; /* Show menu icon */
+            }
+
+            .logo img {
+                height: 40px; /* Scale down the logo */
+                max-height: 100%;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                text-align: left;
+                padding: 10px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            .nav-links li {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="code-panel-toggle" onclick="toggleCodePanel()">
+        <span class="material-symbols-outlined">widget_medium</span>
+    </div>
+    <div class="code-panel">
+        <div class="panel-section">
+            <h3>Code Generator</h3>
+            <button onclick="generateCode()">Generate Code</button>
+            <pre id="generatedCode" style="margin-top: 10px; white-space: pre-wrap; background: #f5f5f5; padding: 10px; border-radius: 4px;"></pre>
+        </div>
+        <div class="panel-section">
+            <h3>Elements</h3>
+            <div class="draggable-element" draggable="true" data-type="banner" onclick="showBannerImage()">
+                <span class="material-symbols-outlined">image</span> Banner
+            </div>
+            <div class="draggable-element" draggable="true" data-type="text" onclick="showTextEditor()">
+                <span class="material-symbols-outlined">text_fields</span> Text
+            </div>
+            <div class="draggable-element" draggable="true" data-type="banner-text" onclick="showBannerWithText()">
+                <span class="material-symbols-outlined">image</span> Banner with Text
+            </div>
+        </div>
+    </div>
+
+    <div class="properties-panel">
+        <div class="panel-section">
+            <h3>Logo Settings</h3>
+            <input type="text" id="logoUrl" placeholder="Enter logo URL" onchange="updateLogo()">
+        </div>
+        <div class="panel-section">
+            <h3>Banner Image</h3>
+            <input type="text" id="bannerUrl" placeholder="Enter banner URL" onchange="updateBannerImage()">
+            <div id="bannerPreview" style="margin-top: 10px;"></div>
+        </div>
+        <div class="panel-section" id="navLinksEditor">
+            <h3>Navigation Links</h3>
+            <button onclick="addNavLink()">Add New Link</button>
+        </div>
+        <div class="panel-section" id="textEditorSection" style="display: none;">
+            <h3>Text Editor</h3>
+            <input type="text" id="smallText" placeholder="Small text" onchange="updateTextContent('small')">
+            <input type="number" id="smallTextTopMargin" placeholder="Top margin (px)" onchange="updateTextMargin('small', 'top')" value="100">
+            <input type="text" id="mainText" placeholder="Main content" onchange="updateTextContent('main')">
+            <input type="text" id="descText" placeholder="Description" onchange="updateTextContent('desc')">
+            <input type="number" id="descTextBottomMargin" placeholder="Bottom margin (px)" onchange="updateTextMargin('desc', 'bottom')" value="2">
+            <input type="color" id="textColor" onchange="updateTextColor()" value="#000000">
+            <input type="color" id="buttonColor" onchange="updateButtonColor()" value="#ffffff">
+            <input type="range" id="imageOpacity" min="0" max="1" step="0.1" value="1" onchange="updateImageOpacity()">
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="menu-logo-container" style="-webkit-tap-highlight-color: transparent;">
+            <div class="menu-toggle" onclick="toggleMenu()"><span class="material-symbols-outlined">menu</span></div>
+            <div class="logo">
+                <img src="logo.png" alt="Logo">
+            </div>
+        </div>
+        <ul class="nav-links" style="-webkit-tap-highlight-color: transparent;">
+            <li><a href="#">Products</a></li>
+            <li><a href="#">Collection</a></li>
+            <li><a href="#">Subscription</a></li>
+        </ul>
+        <div class="icons"style="-webkit-tap-highlight-color: transparent;">
+            <span class="material-symbols-outlined" onclick="handleIconClick('search')">search</span>
+            <span class="material-symbols-outlined" onclick="handleIconClick('favorite')">favorite</span>
+            <span class="material-symbols-outlined" onclick="handleIconClick('call')">call</span>
+        </div>
+    </nav>
+
+    <div class="properties-panel">
+        <div class="panel-section">
+            <h3>Logo Settings</h3>
+            <input type="text" id="logoUrl" placeholder="Enter logo URL">
+            <button onclick="updateLogo()">Update Logo</button>
+        </div>
+        <div class="panel-section">
+            <h3>Navigation Links</h3>
+            <div id="navLinksEditor"></div>
+            <button onclick="addNavLink()">Add New Link</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function toggleCodePanel() {
+            const codePanel = document.querySelector('.code-panel');
+            const toggleButton = document.querySelector('.code-panel-toggle');
+            codePanel.classList.toggle('active');
+            toggleButton.style.display = codePanel.classList.contains('active') ? 'none' : 'block';
+        }
+
+        
+        
+        function initNavLinksEditor() {
+            const editor = document.getElementById('navLinksEditor');
+            const navLinks = document.querySelectorAll('.nav-links li a');
+            
+            // Clear existing editors
+            while (editor.children.length > 2) {
+                editor.removeChild(editor.lastChild);
+            }
+            
+            navLinks.forEach((link, index) => {
+                const linkEditor = document.createElement('div');
+                linkEditor.innerHTML = `
+                    <input type="text" value="${link.textContent}" onchange="updateNavLink(${index}, this.value)" placeholder="Link text">
+                    <input type="text" value="${link.href}" onchange="updateNavLinkHref(${index}, this.value)" placeholder="URL">
+                    <button onclick="removeNavLink(${index})">Remove</button>
+                `;
+                editor.appendChild(linkEditor);
+            });
+        }
+
+        // Toggle properties panel
+        document.querySelector('.navbar').addEventListener('click', function(e) {
+            if (!e.target.closest('.properties-panel')) {
+                document.querySelector('.properties-panel').classList.toggle('active');
+                initNavLinksEditor();
+            }
+        });
+
+        // Update logo
+        function updateLogo() {
+            const logoUrl = document.getElementById('logoUrl').value;
+            if (logoUrl) {
+                document.querySelector('.logo img').src = logoUrl;
+            }
+        }
+        
+        function showEditModal(title, content) {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'modal-overlay';
+            modalOverlay.innerHTML = `
+                <div class="modal">
+                    <div class="modal-header">
+                        <h3>${title}</h3>
+                        <span class="modal-close material-symbols-outlined">close</span>
+                    </div>
+                    <div class="modal-content">${content}</div>
+                </div>
+            `;
+            document.body.appendChild(modalOverlay);
+            modalOverlay.style.display = 'flex';
+
+            modalOverlay.querySelector('.modal-close').addEventListener('click', () => {
+                modalOverlay.remove();
+            });
+
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    modalOverlay.remove();
+                }
+            });
+        }
+
+        function showBannerImage() {
+            const bannerContainer = document.createElement('div');
+            bannerContainer.className = 'banner-container';
+            bannerContainer.innerHTML = '<img src="back.png" style="width: 100%;">';
+            
+            const nav = document.querySelector('nav');
+            const elementsAfterNav = Array.from(document.body.children).filter(el => 
+                el.compareDocumentPosition(nav) === Node.DOCUMENT_POSITION_FOLLOWING
+            );
+            
+            if (elementsAfterNav.length > 0) {
+                elementsAfterNav[elementsAfterNav.length - 1].after(bannerContainer);
+            } else {
+                nav.after(bannerContainer);
+            }
+            
+            bannerContainer.addEventListener('click', function() {
+                const modalContent = `
+                    <div class="panel-section">
+                        <input type="text" id="modalBannerUrl" placeholder="Enter banner URL" value="${bannerContainer.querySelector('img').src}">
+                        <div id="modalBannerPreview">
+                            <img src="${bannerContainer.querySelector('img').src}" style="width: 100%; max-width: 300px; margin-top: 10px;">
+                        </div>
+                        <button onclick="updateBannerFromModal(this)">Update Banner</button>
+                    </div>
+                `;
+                showEditModal('Edit Banner', modalContent);
+            });
+        }
+        
+        function updateBannerFromModal(button) {
+            const bannerUrl = button.parentElement.querySelector('#modalBannerUrl').value;
+            if (bannerUrl) {
+                const bannerContainer = document.querySelector('.banner-container');
+                if (bannerContainer) {
+                    bannerContainer.querySelector('img').src = bannerUrl;
+                }
+                button.closest('.modal-overlay').remove();
+            }
+        }
+
+        function updateBannerImage() {
+            const bannerUrl = document.getElementById('bannerUrl').value;
+            if (bannerUrl) {
+                document.getElementById('bannerPreview').innerHTML = 
+                    '<img src="' + bannerUrl + '" style="width: 100%; max-width: 300px; margin-top: 10px;">';
+                
+                const bannerContainer = document.querySelector('.banner-container');
+                if (bannerContainer) {
+                    bannerContainer.querySelector('img').src = bannerUrl;
+                }
+            }
+        }
+        
+        function showTextEditor() {
+            const textContainer = document.createElement('div');
+            textContainer.className = 'text-container';
+            textContainer.innerHTML = `
+                <div class="text-section small-text" style="margin-bottom: 8px; margin-top: 30px;">Here your text</div>
+                <div class="text-section main-text" style="font-weight: bold; font-size: 24px; margin-bottom: 8px;">Here you main content</div>
+                <div class="text-section desc-text" style="margin-top: 2px; margin-bottom: 30px;">Here your content discription about your website, product, etc</div>
+            `;
+            textContainer.dataset.smallTextTopMargin = "100px";
+            textContainer.dataset.descTextBottomMargin = "2px";
+            textContainer.style.textAlign = 'center';
+            textContainer.style.display = 'flex';
+            textContainer.style.flexDirection = 'column';
+            textContainer.style.justifyContent = 'center';
+            textContainer.style.minHeight = 'auto';
+            textContainer.style.padding = '10px 0';
+            textContainer.style.margin = '0';
+            
+            // Find the last element after nav and insert after it
+            const nav = document.querySelector('nav');
+            const elementsAfterNav = Array.from(document.body.children).filter(el => 
+                el.compareDocumentPosition(nav) === Node.DOCUMENT_POSITION_FOLLOWING
+            );
+            
+            if (elementsAfterNav.length > 0) {
+                elementsAfterNav[elementsAfterNav.length - 1].after(textContainer);
+            } else {
+                nav.after(textContainer);
+            }
+            
+            document.getElementById('textEditorSection').style.display = 'block';
+            document.querySelector('.properties-panel').classList.add('active');
+            
+            textContainer.addEventListener('click', function() {
+                const modalContent = `
+                    <div class="panel-section">
+                        <input type="text" id="modalSmallText" value="${textContainer.querySelector('.small-text').textContent}" placeholder="Small text">
+                        <input type="text" id="modalMainText" value="${textContainer.querySelector('.main-text').textContent}" placeholder="Main content">
+                        <input type="text" id="modalDescText" value="${textContainer.querySelector('.desc-text').textContent}" placeholder="Description">
+                        <input type="color" id="modalTextColor" value="#000000">
+                        <button onclick="updateTextFromModal(this)">Update Text</button>
+                    </div>
+                `;
+                showEditModal('Edit Text', modalContent);
+            });
+        }
+        
+        function updateTextFromModal(button) {
+            const modalSection = button.parentElement;
+            const textContainer = document.querySelector('.text-container');
+            if (!textContainer) return;
+
+            const smallText = modalSection.querySelector('#modalSmallText').value;
+            const mainText = modalSection.querySelector('#modalMainText').value;
+            const descText = modalSection.querySelector('#modalDescText').value;
+            const textColor = modalSection.querySelector('#modalTextColor').value;
+
+            textContainer.querySelector('.small-text').textContent = smallText;
+            textContainer.querySelector('.main-text').textContent = mainText;
+            textContainer.querySelector('.desc-text').textContent = descText;
+
+            textContainer.querySelectorAll('.text-section').forEach(el => {
+                el.style.color = textColor;
+            });
+
+            button.closest('.modal-overlay').remove();
+        }
+        
+        function updateTextMargin(type, position) {
+            const textContainer = document.querySelector('.text-container');
+            if (!textContainer) return;
+            
+            const marginValue = document.getElementById(`${type}Text${position.charAt(0).toUpperCase() + position.slice(1)}Margin`).value;
+            
+            if (type === 'small' && position === 'top') {
+                textContainer.querySelector('.small-text').style.marginTop = `${marginValue}px`;
+                textContainer.dataset.smallTextTopMargin = `${marginValue}px`;
+            } else if (type === 'desc' && position === 'bottom') {
+                textContainer.querySelector('.desc-text').style.marginBottom = `${marginValue}px`;
+                textContainer.dataset.descTextBottomMargin = `${marginValue}px`;
+            }
+        }
+        
+        function updateTextColor() {
+            const textContainer = document.querySelector('.text-container');
+            if (!textContainer) return;
+            const color = document.getElementById('textColor').value;
+            textContainer.querySelectorAll('.text-section').forEach(el => {
+                el.style.color = color;
+            });
+        }
+        
+        function updateButtonColor() {
+            const button = document.querySelector('.text-container button');
+            if (button) {
+                button.style.backgroundColor = document.getElementById('buttonColor').value;
+            }
+        }
+        
+        function updateImageOpacity() {
+            const banner = document.querySelector('.banner-container img');
+            if (banner) {
+                banner.style.opacity = document.getElementById('imageOpacity').value;
+                banner.style.filter = `brightness(${1 - (1 - document.getElementById('imageOpacity').value) * 0.5})`;
+            }
+        }
+        
+        function showBannerWithText() {
+            const bannerTextContainer = document.createElement('div');
+            bannerTextContainer.className = 'banner-text-container';
+            bannerTextContainer.innerHTML = `
+                <div class="banner-container">
+                    <img src="back.png" style="width: 100%;">
+                    <div class="text-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white;">
+                        <div class="text-section small-text" style="margin-bottom: 8px;  font-size: 25px; font-weight: 20px;">Your text here</div>
+                        <div class="text-section main-text" style="font-weight: bold; font-size: 45px; margin-bottom: 8px;">Main content here</div>
+                        <div class="text-section desc-text" style="margin-bottom: 20px; font-size: 25px; font-weight: 20px;">Description text here</div>
+                        <button style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px;">Click Here</button>
+                    </div>
+                </div>
+            `;
+            
+            const nav = document.querySelector('nav');
+            const elementsAfterNav = Array.from(document.body.children).filter(el => 
+                el.compareDocumentPosition(nav) === Node.DOCUMENT_POSITION_FOLLOWING
+            );
+            
+            if (elementsAfterNav.length > 0) {
+                elementsAfterNav[elementsAfterNav.length - 1].after(bannerTextContainer);
+            } else {
+                nav.after(bannerTextContainer);
+            }
+            
+            bannerTextContainer.addEventListener('click', function() {
+                const modalContent = `
+                    <div class="panel-section">
+                        <h4>Banner Image</h4>
+                        <input type="text" id="modalBannerUrl" placeholder="Enter banner URL" value="${bannerTextContainer.querySelector('img').src}">
+                        <h4>Text Content</h4>
+                        <input type="text" id="modalSmallText" value="${bannerTextContainer.querySelector('.small-text').textContent}" placeholder="Small text">
+                        <input type="text" id="modalMainText" value="${bannerTextContainer.querySelector('.main-text').textContent}" placeholder="Main content">
+                        <input type="text" id="modalDescText" value="${bannerTextContainer.querySelector('.desc-text').textContent}" placeholder="Description">
+                        <h4>Styling</h4>
+                        <label>Text Color:</label>
+                        <input type="color" id="modalTextColor" value="#ffffff">
+                        <label>Button Color:</label>
+                        <input type="color" id="modalButtonColor" value="#333333">
+                        <button onclick="updateBannerWithTextFromModal(this)">Update Banner</button>
+                    </div>
+                `;
+                showEditModal('Edit Banner with Text', modalContent);
+            });
+        }
+
+        function updateBannerWithTextFromModal(button) {
+            const modalSection = button.parentElement;
+            const bannerTextContainer = document.querySelector('.banner-text-container');
+            if (!bannerTextContainer) return;
+
+            const bannerUrl = modalSection.querySelector('#modalBannerUrl').value;
+            const smallText = modalSection.querySelector('#modalSmallText').value;
+            const mainText = modalSection.querySelector('#modalMainText').value;
+            const descText = modalSection.querySelector('#modalDescText').value;
+            const textColor = modalSection.querySelector('#modalTextColor').value;
+            const buttonColor = modalSection.querySelector('#modalButtonColor').value;
+
+            if (bannerUrl) bannerTextContainer.querySelector('img').src = bannerUrl;
+            bannerTextContainer.querySelector('.small-text').textContent = smallText;
+            bannerTextContainer.querySelector('.main-text').textContent = mainText;
+            bannerTextContainer.querySelector('.desc-text').textContent = descText;
+            
+            const textContainer = bannerTextContainer.querySelector('.text-container');
+            textContainer.style.color = textColor;
+            textContainer.querySelector('button').style.background = buttonColor;
+
+            button.closest('.modal-overlay').remove();
+        }
+        
+        // Navigation link functions
+        function updateNavLink(index, text) {
+            const links = document.querySelectorAll('.nav-links li a');
+            if (links[index]) {
+                links[index].textContent = text;
+            }
+        }
+
+        function updateNavLinkHref(index, url) {
+            const links = document.querySelectorAll('.nav-links li a');
+            if (links[index]) {
+                links[index].href = url;
+            }
+        }
+
+        function removeNavLink(index) {
+            const links = document.querySelectorAll('.nav-links li');
+            if (links[index]) {
+                links[index].remove();
+                initNavLinksEditor();
+            }
+        }
+        
+        
+        
+        
+
+        function addNavLink() {
+            const navLinks = document.querySelector('.nav-links');
+            const newLi = document.createElement('li');
+            newLi.innerHTML = '<a href="#">New Link</a>';
+            navLinks.appendChild(newLi);
+            initNavLinksEditor();
+        }
+
+        function generateCode() {
+            // Create modal container
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '50%';
+            modal.style.left = '50%';
+            modal.style.transform = 'translate(-50%, -50%)';
+            modal.style.width = '80%';
+            modal.style.maxWidth = '800px';
+            modal.style.height = '80%';
+            modal.style.backgroundColor = 'white';
+            modal.style.borderRadius = '8px';
+            modal.style.boxShadow = '0 0 20px rgba(0,0,0,0.3)';
+            modal.style.zIndex = '10000';
+            modal.style.padding = '20px';
+            modal.style.overflow = 'auto';
+            
+            // Add close button
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close';
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.top = '10px';
+            closeBtn.style.right = '10px';
+            closeBtn.style.padding = '5px 10px';
+            closeBtn.style.border = 'none';
+            closeBtn.style.borderRadius = '4px';
+            closeBtn.style.backgroundColor = '#333';
+            closeBtn.style.color = 'white';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.onclick = function() {
+                document.body.removeChild(modal);
+            };
+            modal.appendChild(closeBtn);
+            
+            // Create a clone of the document
+            const tempDoc = document.cloneNode(true);
+            
+            // Remove builder interface elements
+            const builderElements = tempDoc.querySelectorAll('.code-panel, .properties-panel, .code-panel-toggle');
+            builderElements.forEach(el => el.remove());
+            
+            // Remove builder-related styles
+            const styleElement = tempDoc.querySelector('style');
+            const styleContent = styleElement.textContent;
+            styleElement.textContent = styleContent
+                .replace(/\.properties-panel[^}]+}\s*/g, '')
+                .replace(/\.code-panel[^}]+}\s*/g, '')
+                .replace(/\.panel-section[^}]+}\s*/g, '')
+                .replace(/\.code-panel-toggle[^}]+}\s*/g, '');
+            
+            // Handle image paths in the generated code
+            const images = tempDoc.querySelectorAll('img, div[style*="background"]');
+            images.forEach(el => {
+                if (el.tagName === 'IMG') {
+                    const src = el.getAttribute('src');
+                    if (src && !src.startsWith('http')) {
+                        el.setAttribute('src', window.location.origin + '/' + src);
+                    }
+                } else {
+                    const bg = el.style.backgroundImage;
+                    if (bg && !bg.includes('http')) {
+                        const url = bg.match(/url\(['"]?(.*?)['"]?\)/)[1];
+                        el.style.backgroundImage = `url(${window.location.origin}/${url})`;
+                    }
+                }
+            });
+
+            // Format the code for better readability
+            const formattedCode = tempDoc.documentElement.outerHTML
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            // Add code to modal
+            const codeDisplay = document.createElement('pre');
+            codeDisplay.style.whiteSpace = 'pre-wrap';
+            codeDisplay.style.background = '#f5f5f5';
+            codeDisplay.style.padding = '20px';
+            codeDisplay.style.borderRadius = '4px';
+            codeDisplay.style.marginTop = '30px';
+            codeDisplay.innerHTML = formattedCode;
+            modal.appendChild(codeDisplay);
+            
+            // Add modal to body
+            document.body.appendChild(modal);
+        }
+        
+        
+    </script>
+
+</body>
+</html>
